@@ -1,2 +1,70 @@
-testing git pull
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: elasticbeanstalk-lambda-role-1
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+            - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: RestartElasticBeanstalk
+      Description: LambdaFunction to restart app server's
+      Runtime: python3.7
+      Code:
+        ZipFile: |
+          import boto3
+          envid=['e-awsenvidid']
+          client = boto3.client('elasticbeanstalk')
+          def handler(event, context):
+              try:
+                  response = client.restart_app_server(EnvironmentId=str(envid[appid].strip()))
+                  if response:
+                      print('Restart app server environment %s' %str(envid[appid]))
+                  else:
+                      print('Failed to Restart app server environment %s' %str(envid[appid]))
 
+              except Exception as e:
+                  print(e)
+      Handler: index.handler
+      MemorySize: 128
+      Timeout: 10
+      Role:
+        Fn::GetAtt:
+          - LambdaRole
+          - Arn
+  ScheduledTargetRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "ScheduledRule"
+      ScheduleExpression: "rate(10 minutes)"
+      State: "ENABLED"
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - "LambdaFunction"
+              - "Arn"
+          Id: "TargetFunctionV1"
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "LambdaFunction"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "ScheduledTargetRule"
+          - "Arn"
