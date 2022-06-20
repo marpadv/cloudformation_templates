@@ -2,7 +2,7 @@ Resources:
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: elasticbeanstalk-lambda-role-1
+      RoleName: elasticbeanstalk-lambda-role-1sin
       AssumeRolePolicyDocument:
         Statement:
           - Action:
