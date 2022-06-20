@@ -2,7 +2,7 @@ Resources:
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: elasticbeanstalk-lambda-role-1sin
+      RoleName: elasticbeanstalk-lambda-role-1
       AssumeRolePolicyDocument:
         Statement:
           - Action:
@@ -15,7 +15,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Path: /
+      Path: / 
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -25,7 +25,7 @@ Resources:
       Code:
         ZipFile: |
           import boto3
-          envid=['e-awsenvidid']
+          envid=['e-ps5rvzs7yc']
           client = boto3.client('elasticbeanstalk')
           def handler(event, context):
               try:
