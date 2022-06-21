@@ -25,18 +25,26 @@ Resources:
       Code:
         ZipFile: |
           import boto3
-          envid=['e-ps5rvzs7yc']
-          client = boto3.client('elasticbeanstalk')
+          import json
+          envid='e-ps5rvzs7yc'
+          client = boto3.client('elasticbeanstalk', region_name="us-east-1")
           def handler(event, context):
               try:
-                  response = client.restart_app_server(EnvironmentId=str(envid[appid].strip()))
-                  if response:
-                      print('Restart app server environment %s' %str(envid[appid]))
-                  else:
-                      print('Failed to Restart app server environment %s' %str(envid[appid]))
-
+                  applications=client.describe_environments()
+                  print(applications)
+                  for environment in applications['Environments']:
+                      EnvironmentID = environment["EnvironmentId"]
+                      print(EnvironmentID)
+                      if EnvironmentID==envid:
+                          response = client.restart_app_server(EnvironmentId=envid)
+                          if response:
+                              print('Restart app server environment ',envid)
+                          else:
+                              print('Failed to Restart app server environment ',envid)
+                          return {"statusCode": 200, "body": json.dumps("restarted the Environment : "+envid)}
               except Exception as e:
-                  print(e)
+                  return (e)
+
       Handler: index.handler
       MemorySize: 128
       Timeout: 10
